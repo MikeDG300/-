@@ -21,12 +21,12 @@ debootstrap \
 
     Делаем скрипт исполняемым посредством команды - sudo chmod +x ./makeastra
 
-    Создаем директорию по пути /var/tmp/makeastra
+    Создаем директорию по пути /var/tmp/dockerastra
 
-    После выполняем скрипт, который мы написали в директорию sudo ./makeastra /var/tmp/makeastra
+    После выполняем скрипт, который мы написали в директорию sudo ./makeastra /var/tmp/dockerastra
     Выполнится копирование ФС Astra Linux с тем набором программ и модулей, которые мы указали выше
     Если ФС развернулась успешно, в терминале по окончанию процесса будет выведено сообщение - Base system installed successfully
-    Переходим в ФС путем команды chroot /var/tmp/makeastra и можем в ней работать и проверить версию ОС например введя команду cat /etc/astra_version
+    Переходим в ФС путем команды chroot /var/tmp/dockerastra и можем в ней работать и проверить версию ОС например введя команду cat /etc/astra_version
 
     rm -rf /var/cache/apt/archives/*.deb
     удаляем скачанные .deb-файлы, чтобы уменьшить образ
@@ -41,7 +41,45 @@ debootstrap \
     update-locale ru_RU.UTF-8
     устанавливаем русскую локаль по умолчанию
 
+    Далее, формируем образ на основе того, что сделали выше. Для этого создаем Dockerfile следующего содержания и помещаем в директорию с нашим проектом:
+
+    FROM astra:175
+    COPY ./Python_Hello_World /Python_Hello_World
+    EXPOSE 5000
+    CMD ["python", "/Python_Hello_World"]
+
+    После этого делаем файл исполняемым sudo chmod +x ./Dockerfile
+
+    Также кладем в директорию проекта наш файл с приложением Python_Hello_World,:
+
+    from flask import Flask
+
+    app = Flask(__name__)
+
+    @app.route('/')
+    def hello_world():
+    return 'My name is Mikhail Dyakov'
+
+    if __name__ == '__main__':
+    app.run(debug=True)
+
+    Собираем контейнер командой sudo docker build . -t astra:175
+    Если контейнер собрался без ошибок, то командой sudo docker image list увидим наш образ на основе ФС системы Astra Linux 1.7.5
+    Теперь настал черед запустить и проверить наш контейнер, который запустит нам легкое приложение на Flask
+    Запуская контейнер надо помнить о сетевой связанности контейнера и хостовой машины. Поэтому мы конкретно указываем порты при запуске контейнера.
+    Я запускал командой sudo docker run -p 5005:5000 astra:175
+
+    ![VirtualBox_Astra-Linux_15_07_2024_15_24_21](https://github.com/user-attachments/assets/92693111-41e1-4b9c-b9b5-2f5dddf3e416)
+
+    Мы видим, что наш контейнер запущен и по ссылке, которую отобразило наше flask-приложение можем перейти на нашу тестовую страницу
+
     
+
+
+    ![VirtualBox_Astra-Linux_15_07_2024_15_24_49](https://github.com/user-attachments/assets/efe62057-cec0-44d1-92cf-5a3d00ede0ac)
+
+
+    Вот так у нас получилось запустить тестовоеприложение на Flask в контейнере на базе Astra Linux 1.7.5
 
     
 
