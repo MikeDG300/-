@@ -62,6 +62,21 @@ debootstrap \
 
     if __name__ == '__main__':
     app.run(debug=True)
+    Импортируем образ, который мы подготовили и настроили в локальный репозиторий Докера. Для этого необходимо подготовить файл со скриптом:
+
+    #!/bin/bash
+
+    tar -C $1 -cpf - . | \
+    docker import - $2 \
+    --change "ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+    --change 'CMD ["/bin/bash"]' \
+    --change "ENV LANG=ru_RU.UTF-8"
+
+    Назовем файл dockerimport и положим в ту же директорию, что и остальные файлы.
+    chmod +x dockerimport
+
+    sudo ./dockerimport /var/tmp/dockerastra astra:174-orel
+    импортируем директорию /var/tmp/dockerastra в виде Docker-образа с именем astra и TAG 175
 
     Собираем контейнер командой sudo docker build . -t astra:175
     Если контейнер собрался без ошибок, то командой sudo docker image list увидим наш образ на основе ФС системы Astra Linux 1.7.5
